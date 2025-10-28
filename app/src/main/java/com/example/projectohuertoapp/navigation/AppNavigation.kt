@@ -1,0 +1,40 @@
+package com.example.projectohuertoapp.navigation
+
+import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.projectohuertoapp.ui.screens.CarritoScreen
+import com.example.projectohuertoapp.ui.screens.CatalogoScreen
+import com.example.projectohuertoapp.ui.screens.LoginScreen
+import com.example.projectohuertoapp.ui.screens.QRScannerScreen
+import com.example.projectohuertoapp.ui.screens.RegistroScreen
+import com.example.projectohuertoapp.viewmodel.AuthViewModel
+import com.example.projectohuertoapp.viewmodel.CarritoViewModel
+import com.example.projectohuertoapp.viewmodel.CatalogoViewModel
+
+@Composable
+fun AppNavigation(authViewModel: AuthViewModel) {
+    val navController = rememberNavController()
+    val carritoViewModel: CarritoViewModel = viewModel()
+    val catalogoViewModel: CatalogoViewModel = viewModel()
+
+    NavHost(navController = navController, startDestination = "login") {
+        composable("login") {
+            LoginScreen(navController, authViewModel)
+        }
+        composable("registro") {
+            RegistroScreen(navController, authViewModel)
+        }
+        composable("catalogo") {
+            CatalogoScreen(navController, catalogoViewModel, carritoViewModel)
+        }
+        composable("carrito") {
+            CarritoScreen(navController, carritoViewModel)
+        }
+        composable("qr_scanner") {
+            QRScannerScreen(navController)
+        }
+    }
+}
