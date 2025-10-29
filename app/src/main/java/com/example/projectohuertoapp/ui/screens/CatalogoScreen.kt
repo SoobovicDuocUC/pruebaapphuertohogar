@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.QrCodeScanner // Importar el ícono de QR
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -30,6 +31,15 @@ fun CatalogoScreen(
             TopAppBar(
                 title = { Text("HuertoHogar") },
                 actions = {
+                    // --- BOTÓN QR AÑADIDO AQUÍ ---
+                    IconButton(onClick = { navController.navigate("qr_scanner") }) {
+                        Icon(
+                            imageVector = Icons.Default.QrCodeScanner, // Ícono de QR
+                            contentDescription = "Escanear Código QR"
+                        )
+                    }
+                    // --- FIN BOTÓN QR ---
+
                     IconButton(onClick = { navController.navigate("carrito") }) {
                         Icon(
                             imageVector = Icons.Default.ShoppingCart,
@@ -40,7 +50,7 @@ fun CatalogoScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary // Asegura que los íconos sean blancos
                 )
             )
         },

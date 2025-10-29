@@ -20,7 +20,7 @@ import com.example.projectohuertoapp.viewmodel.RegistroState
 @Composable
 fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel) {
     var nombre by remember { mutableStateOf("") }
-    var correo by remember { mutableStateOf("") }
+    var correo by remember { mutableStateOf("") }//hola
     var contrasena by remember { mutableStateOf("") }
     var errorManual by remember { mutableStateOf<String?>(null) }
 
