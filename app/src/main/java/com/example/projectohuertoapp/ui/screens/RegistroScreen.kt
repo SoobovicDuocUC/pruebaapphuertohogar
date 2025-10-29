@@ -14,6 +14,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.projectohuertoapp.viewmodel.AuthViewModel
+import com.example.projectohuertoapp.viewmodel.RegistroState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,7 +22,28 @@ fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel) {
     var nombre by remember { mutableStateOf("") }
     var correo by remember { mutableStateOf("") }
     var contrasena by remember { mutableStateOf("") }
-    var error by remember { mutableStateOf<String?>(null) }
+    var errorManual by remember { mutableStateOf<String?>(null) }
+
+    // Observar el estado de registro desde el ViewModel
+    val registroState by authViewModel.registroState.collectAsState()
+
+    // Reaccionar al estado de registro
+    LaunchedEffect(registroState) {
+        if (registroState is RegistroState.Success) {
+            navController.navigate("catalogo") {
+                popUpTo("login") { inclusive = true }
+            }
+            // Limpiar el estado después de navegar
+            authViewModel.resetRegistroState()
+        }
+    }
+
+    // Limpiar el estado si el usuario sale de la pantalla
+    DisposableEffect(Unit) {
+        onDispose {
+            authViewModel.resetRegistroState()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -65,7 +87,8 @@ fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel) {
                 onValueChange = { nombre = it },
                 label = { Text("Nombre Completo") },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                enabled = registroState !is RegistroState.Loading
             )
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
@@ -74,7 +97,8 @@ fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel) {
                 label = { Text("Correo Electrónico") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                enabled = registroState !is RegistroState.Loading
             )
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
@@ -84,9 +108,12 @@ fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel) {
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                enabled = registroState !is RegistroState.Loading
             )
-            error?.let {
+
+            // Mostrar error manual (campos vacíos)
+            errorManual?.let {
                 Text(
                     it,
                     color = MaterialTheme.colorScheme.error,
@@ -94,24 +121,38 @@ fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel) {
                     style = MaterialTheme.typography.bodySmall
                 )
             }
+
+            // Mostrar error de registro (ej. email duplicado)
+            if (registroState is RegistroState.Error) {
+                Text(
+                    (registroState as RegistroState.Error).message,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(top = 8.dp),
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
             Spacer(modifier = Modifier.height(24.dp))
+
+            // Mostrar indicador de carga
+            if (registroState is RegistroState.Loading) {
+                CircularProgressIndicator(modifier = Modifier.padding(bottom = 16.dp))
+            }
+
             Button(
                 onClick = {
+                    errorManual = null // Limpiar error manual
                     if (nombre.isNotBlank() && correo.isNotBlank() && contrasena.length >= 6) {
-                        if (authViewModel.registrarUsuario(nombre, correo, contrasena)) {
-                            navController.navigate("catalogo") {
-                                popUpTo("login") { inclusive = true }
-                            }
-                        } else {
-                            error = "El correo ya está registrado."
-                        }
+                        // La lógica de navegación ahora está en el LaunchedEffect
+                        authViewModel.registrarUsuario(nombre, correo, contrasena)
                     } else {
-                        error = "Por favor, completa todos los campos correctamente."
+                        errorManual = "Por favor, completa todos los campos correctamente."
                     }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp)
+                    .height(50.dp),
+                enabled = registroState !is RegistroState.Loading
             ) {
                 Text("Crear Cuenta", style = MaterialTheme.typography.labelLarge)
             }

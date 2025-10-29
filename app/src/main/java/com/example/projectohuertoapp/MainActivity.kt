@@ -14,6 +14,7 @@ import com.example.projectohuertoapp.data.repository.UsuarioRepository
 import com.example.projectohuertoapp.navigation.AppNavigation
 import com.example.projectohuertoapp.ui.theme.HuertoHogarTheme
 import com.example.projectohuertoapp.viewmodel.AuthViewModel
+// IMPORT FALTANTE AÑADIDO AQUÍ:
 import com.example.projectohuertoapp.viewmodel.AuthViewModelFactory
 
 class MainActivity : ComponentActivity() {
@@ -25,12 +26,14 @@ class MainActivity : ComponentActivity() {
             applicationContext,
             AppDatabase::class.java,
             "huertohogar_database"
-        ).build()
+        ).build() // No olvides el .build() aquí
 
+        // Crear el Repositorio y la Factory
         val usuarioRepository = UsuarioRepository(db.usuarioDao())
         val authViewModelFactory = AuthViewModelFactory(usuarioRepository)
 
         setContent {
+            // Usar la factory para crear el ViewModel
             val authViewModel: AuthViewModel = viewModel(factory = authViewModelFactory)
 
             HuertoHogarTheme {
