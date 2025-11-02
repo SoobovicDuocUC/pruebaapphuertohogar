@@ -7,20 +7,27 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.projectohuertoapp.ui.screens.CarritoScreen
 import com.example.projectohuertoapp.ui.screens.CatalogoScreen
+import com.example.projectohuertoapp.ui.screens.HomeScreen
 import com.example.projectohuertoapp.ui.screens.LoginScreen
 import com.example.projectohuertoapp.ui.screens.QRScannerScreen
 import com.example.projectohuertoapp.ui.screens.RegistroScreen
 import com.example.projectohuertoapp.viewmodel.AuthViewModel
 import com.example.projectohuertoapp.viewmodel.CarritoViewModel
 import com.example.projectohuertoapp.viewmodel.CatalogoViewModel
+import com.example.projectohuertoapp.viewmodel.HomeViewModel
 
 @Composable
 fun AppNavigation(authViewModel: AuthViewModel) {
     val navController = rememberNavController()
     val carritoViewModel: CarritoViewModel = viewModel()
     val catalogoViewModel: CatalogoViewModel = viewModel()
+    val homeViewModel: HomeViewModel = viewModel ()
 
-    NavHost(navController = navController, startDestination = "login") {
+    NavHost(navController = navController, startDestination = "home") {
+
+        composable("home") {
+            HomeScreen(navController, homeViewModel)
+        }
         composable("login") {
             LoginScreen(navController, authViewModel)
         }

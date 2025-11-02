@@ -15,13 +15,33 @@ class CarritoViewModel : ViewModel() {
         _items.update { currentList ->
             val existingItem = currentList.find { it.producto.id == producto.id }
             if (existingItem != null) {
-                // Si ya existe, aumenta la cantidad
                 currentList.map {
                     if (it.producto.id == producto.id) it.copy(cantidad = it.cantidad + 1) else it
                 }
             } else {
-                // Si no existe, lo añade a la lista
                 currentList + ItemCarrito(producto, 1)
+            }
+        }
+    }
+
+    fun eliminarDelCarrito(producto: Producto) {
+        _items.update { currentList ->
+            currentList.filter { it.producto.id != producto.id }
+        }
+    }
+
+    fun decrementarCantidad(producto: Producto) {
+        _items.update { currentList ->
+            val existingItem = currentList.find { it.producto.id == producto.id }
+
+            if (existingItem == null) {
+                currentList
+            } else if (existingItem.cantidad > 1) {
+                currentList.map {
+                    if (it.producto.id == producto.id) it.copy(cantidad = it.cantidad - 1) else it
+                }
+            } else {
+                currentList.filter { it.producto.id != producto.id }
             }
         }
     }

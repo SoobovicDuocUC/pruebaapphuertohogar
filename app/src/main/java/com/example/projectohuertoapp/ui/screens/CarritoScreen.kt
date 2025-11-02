@@ -5,6 +5,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -63,10 +66,50 @@ fun CarritoScreen(navController: NavController, viewModel: CarritoViewModel) {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                "${item.cantidad}x ${item.producto.nombre}",
+                                item.producto.nombre,
                                 modifier = Modifier.weight(1f)
                             )
+
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                IconButton(
+                                    onClick = { viewModel.decrementarCantidad(item.producto) },
+                                    enabled = item.cantidad > 0
+                                ) {
+                                    Icon(Icons.Filled.Remove, contentDescription = "Disminuir")
+                                }
+
+                                Text(
+                                    text = "${item.cantidad}x",
+                                    modifier = Modifier.width(30.dp),
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+
+                                IconButton(
+                                    onClick = { viewModel.agregarAlCarrito(item.producto) }
+                                ) {
+                                    Icon(Icons.Filled.Add, contentDescription = "Aumentar")
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.width(16.dp))
+
+
                             Text("$${"%,.0f".format(item.producto.precio * item.cantidad)}")
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            IconButton(
+                                onClick = {
+                                    viewModel.eliminarDelCarrito(item.producto)
+                                },
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Delete,
+                                    contentDescription = "Eliminar producto",
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
                         }
                         Divider()
                     }
