@@ -5,14 +5,24 @@ import androidx.lifecycle.viewModelScope
 import com.example.projectohuertoapp.data.local.entity.Usuario
 import com.example.projectohuertoapp.data.repository.UsuarioRepository
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class AuthViewModel(private val repository: UsuarioRepository) : ViewModel() {
 
     private val _usuarioLogueado = MutableStateFlow<Usuario?>(null)
     val usuarioLogueado: StateFlow<Usuario?> = _usuarioLogueado.asStateFlow()
+
+    val isLoggedIn: StateFlow<Boolean> = usuarioLogueado.map { it != null }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
 
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
     val loginState: StateFlow<LoginState> = _loginState.asStateFlow()

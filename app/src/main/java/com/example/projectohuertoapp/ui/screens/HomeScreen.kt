@@ -28,6 +28,7 @@ fun HomeScreen(
 ) {
     Scaffold(
         topBar = {
+            // ... (TopAppBar sin cambios) ...
             TopAppBar(
                 title = { Text("HuertoHogar") },
                 actions = {
@@ -72,8 +73,9 @@ fun HomeScreen(
                         .fillMaxSize()
                         .background(Color.Black.copy(alpha = 0.4f))
                         .padding(16.dp),
+                    // CAMBIO CLAVE 1: Centramos el contenido verticalmente
                     verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.Start
+                    horizontalAlignment = Alignment.CenterHorizontally // CAMBIO CLAVE 2: Centramos horizontalmente
                 ) {
                     Text(
                         text = "BIENVENIDO A HUERTO HOGAR",
@@ -86,8 +88,28 @@ fun HomeScreen(
                         text = "Frutas y verduras frescas directo a tu mesa.",
                         color = Color.White,
                         fontSize = 16.sp,
-                        modifier = Modifier.padding(bottom = 16.dp)
+                        modifier = Modifier.padding(bottom = 32.dp) // Aumentamos el padding para separarlo del botón
                     )
+
+                    // NUEVO ELEMENTO: El Botón
+                    Button(
+                        onClick = {
+                            viewModel.onCatalogButtonClicked(navController)
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondary,
+                            contentColor = Color.White
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth(0.6f) // Hace el botón un 60% del ancho de la pantalla
+                            .height(50.dp)
+                    ) {
+                        Text(
+                            text = "VER CATÁLOGO",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
             }
         }

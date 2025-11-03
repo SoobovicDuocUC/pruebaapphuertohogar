@@ -7,4 +7,8 @@ class HomeViewModel : ViewModel() {
     fun onLoginIconClicked(navController: NavController) {
         navController.navigate("login")
     }
+
+    fun onCatalogButtonClicked(navController: NavController) {
+        navController.navigate("catalogo")
+    }
 }

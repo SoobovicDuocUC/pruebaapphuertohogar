@@ -1,24 +1,59 @@
 package com.example.projectohuertoapp.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.example.projectohuertoapp.R // <-- IMPORTANTE
+import androidx.lifecycle.viewModelScope
+import com.example.projectohuertoapp.R
 import com.example.projectohuertoapp.model.Producto
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 
 class CatalogoViewModel : ViewModel() {
 
-    private val _productos = MutableStateFlow<List<Producto>>(emptyList())
-    val productos: StateFlow<List<Producto>> = _productos.asStateFlow()
+    // Lista de productos original (la fuente de datos completa)
+    private val _productosOriginal = MutableStateFlow<List<Producto>>(emptyList())
+
+    // 1. Estado para almacenar el texto que el usuario ingresa en el campo de búsqueda
+    private val _searchText = MutableStateFlow("")
+    val searchText: StateFlow<String> = _searchText.asStateFlow()
+
+    // 2. StateFlow que contiene la lista de productos que se mostrará en la UI,
+    // que se calcula combinando la lista original y el texto de búsqueda.
+    val productosFiltrados: StateFlow<List<Producto>> = _productosOriginal
+        .combine(_searchText) { productos, text ->
+            if (text.isBlank()) {
+                productos // Si el texto está vacío, retorna la lista completa
+            } else {
+                val lowerCaseText = text.trim().lowercase()
+                productos.filter { producto ->
+                    // Lógica de filtrado: busca coincidencias en nombre, descripción o categoría
+                    producto.nombre.lowercase().contains(lowerCaseText) ||
+                            producto.descripcion.lowercase().contains(lowerCaseText) ||
+                            producto.categoria.lowercase().contains(lowerCaseText)
+                }
+            }
+        }.stateIn( // Convierte el Flow combinado en un StateFlow
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000), // Comienza a escuchar cuando la UI está activa
+            initialValue = _productosOriginal.value
+        )
 
     init {
         cargarProductosDeEjemplo()
     }
 
+    // 3. Función para actualizar el texto de búsqueda (llamada desde la UI)
+    fun onSearchTextChange(text: String) {
+        _searchText.value = text
+    }
+
     private fun cargarProductosDeEjemplo() {
-        _productos.value = listOf(
-            // Reemplaza 'R.drawable.placeholder' con tus imágenes reales.
+        // Carga la lista completa de productos en la lista original
+        _productosOriginal.value = listOf(
+            // Reemplaza 'R.drawable.ic_launcher_background' con tus imágenes reales.
             Producto("FR001", "Manzanas Fuji", "Crujientes y dulces, del Valle del Maule.", 1200.0, 150, "Frutas Frescas", R.drawable.ic_launcher_background),
             Producto("PO003", "Plátano Maduro", "Racimo de 6 unidades, ideal para batidos y postres.", 1800.0, 80, "Fruta fresca", R.drawable.ic_launcher_background),
             Producto("PO006", "Fresas de Huerta", "Caja de 250g de fresas recién recolectadas.", 5500.0, 95, "Fruta fresca", R.drawable.ic_launcher_background),

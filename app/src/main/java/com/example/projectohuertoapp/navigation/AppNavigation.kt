@@ -22,6 +22,7 @@ fun AppNavigation(authViewModel: AuthViewModel) {
     val carritoViewModel: CarritoViewModel = viewModel()
     val catalogoViewModel: CatalogoViewModel = viewModel()
     val homeViewModel: HomeViewModel = viewModel ()
+    val authViewModel: AuthViewModel = viewModel ()
 
     NavHost(navController = navController, startDestination = "home") {
 
@@ -35,7 +36,7 @@ fun AppNavigation(authViewModel: AuthViewModel) {
             RegistroScreen(navController, authViewModel)
         }
         composable("catalogo") {
-            CatalogoScreen(navController, catalogoViewModel, carritoViewModel)
+            CatalogoScreen(navController, catalogoViewModel, carritoViewModel, authViewModel)
         }
         composable("carrito") {
             CarritoScreen(navController, carritoViewModel)

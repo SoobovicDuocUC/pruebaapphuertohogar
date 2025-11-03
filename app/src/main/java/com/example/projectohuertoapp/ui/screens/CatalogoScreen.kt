@@ -5,8 +5,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.QrCodeScanner // Importar el ícono de QR
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Search // Importado para el campo de búsqueda
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -15,23 +16,32 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.projectohuertoapp.ui.components.ProductoCard
+import com.example.projectohuertoapp.viewmodel.AuthViewModel
 import com.example.projectohuertoapp.viewmodel.CarritoViewModel
-import com.example.projectohuertoapp.viewmodel.CatalogoViewModel
+import com.example.projectohuertoapp.viewmodel.CatalogoViewModel // Importado
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CatalogoScreen(
     navController: NavController,
     catalogoViewModel: CatalogoViewModel,
-    carritoViewModel: CarritoViewModel
+    carritoViewModel: CarritoViewModel,
+    authViewModel: AuthViewModel
 ) {
-    val productos by catalogoViewModel.productos.collectAsState()
+    // 1. Obtener la lista de productos filtrados del ViewModel
+    val productosFiltrados by catalogoViewModel.productosFiltrados.collectAsState()
+
+    // 2. Obtener el texto de búsqueda actual del ViewModel
+    val searchText by catalogoViewModel.searchText.collectAsState()
+
+    // Obtener el estado del usuario logueado
+    val usuario by authViewModel.usuarioLogueado.collectAsState()
+    val isLoggedIn = usuario != null
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("HuertoHogar") },
-                // Boton a la izquierda
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
@@ -40,22 +50,21 @@ fun CatalogoScreen(
                         )
                     }
                 },
-                // Botones a la derecha
                 actions = {
-                    // --- BOTÓN QR AÑADIDO AQUÍ ---
-                    IconButton(onClick = { navController.navigate("qr_scanner") }) {
-                        Icon(
-                            imageVector = Icons.Default.QrCodeScanner, // Ícono de QR
-                            contentDescription = "Escanear Código QR"
-                        )
-                    }
-                    // --- FIN BOTÓN QR ---
-
-                    IconButton(onClick = { navController.navigate("carrito") }) {
-                        Icon(
-                            imageVector = Icons.Default.ShoppingCart,
-                            contentDescription = "Carrito de Compras"
-                        )
+                    // Botones QR y Carrito (solo si el usuario está logueado)
+                    if (isLoggedIn) {
+                        IconButton(onClick = { navController.navigate("qr_scanner") }) {
+                            Icon(
+                                imageVector = Icons.Default.QrCodeScanner,
+                                contentDescription = "Escanear Código QR"
+                            )
+                        }
+                        IconButton(onClick = { navController.navigate("carrito") }) {
+                            Icon(
+                                imageVector = Icons.Default.ShoppingCart,
+                                contentDescription = "Carrito de Compras"
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -68,18 +77,51 @@ fun CatalogoScreen(
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
-        LazyColumn(
+        // Usamos Column para apilar el TextField y el LazyColumn
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(padding)
         ) {
-            items(productos) { producto ->
-                ProductoCard(
-                    producto = producto,
-                    onAddToCart = { carritoViewModel.agregarAlCarrito(producto) }
+            // --- CAMPO DE BÚSQUEDA ---
+            OutlinedTextField(
+                value = searchText,
+                // Llamamos a la función del ViewModel en cada cambio de texto
+                onValueChange = catalogoViewModel::onSearchTextChange,
+                label = { Text("Buscar productos...") },
+                leadingIcon = {
+                    Icon(Icons.Default.Search, contentDescription = "Buscar")
+                },
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
                 )
+            )
+            // --- FIN CAMPO DE BÚSQUEDA ---
+
+            // Lista de productos filtrados
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize(),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), // Ajustar el padding vertical
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Usamos la lista de productos filtrados
+                items(productosFiltrados) { producto ->
+                    ProductoCard(
+                        producto = producto,
+                        onAddToCart = {
+                            if (isLoggedIn) {
+                                carritoViewModel.agregarAlCarrito(producto)
+                            }
+                        },
+                        isLoggedIn = isLoggedIn
+                    )
+                }
             }
         }
     }

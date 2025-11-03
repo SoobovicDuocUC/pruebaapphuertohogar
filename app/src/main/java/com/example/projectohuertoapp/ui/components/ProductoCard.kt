@@ -13,7 +13,11 @@ import androidx.compose.ui.unit.dp
 import com.example.projectohuertoapp.model.Producto
 
 @Composable
-fun ProductoCard(producto: Producto, onAddToCart: () -> Unit) {
+fun ProductoCard(
+    producto: Producto,
+    onAddToCart: () -> Unit,
+    isLoggedIn: Boolean // <-- Añadido para controlar la visibilidad del botón
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -50,13 +54,17 @@ fun ProductoCard(producto: Producto, onAddToCart: () -> Unit) {
                     color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(Modifier.height(16.dp))
-                Button(
-                    onClick = onAddToCart,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium,
-                    contentPadding = PaddingValues(vertical = 12.dp)
-                ) {
-                    Text("Añadir al carrito", style = MaterialTheme.typography.labelLarge)
+
+                // 👇 SOLO MOSTRAR EL BOTÓN SI EL USUARIO HA INICIADO SESIÓN
+                if (isLoggedIn) {
+                    Button(
+                        onClick = onAddToCart,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.medium,
+                        contentPadding = PaddingValues(vertical = 12.dp)
+                    ) {
+                        Text("Añadir al carrito", style = MaterialTheme.typography.labelLarge)
+                    }
                 }
             }
         }
