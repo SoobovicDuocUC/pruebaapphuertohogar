@@ -1,13 +1,12 @@
 package com.example.projectohuertoapp.model
 
-import androidx.annotation.DrawableRes
-
 data class Producto(
-    val id: String,
+    val id: Long,
+    val codigo: String,
     val nombre: String,
-    val descripcion: String,
-    val precio: Double,
-    val stock: Int,
+    val precio: Int,
+    val img: String,
     val categoria: String,
-    @DrawableRes val imagenResId: Int // <-- CAMBIO IMPORTANTE
+    val precioKilo: String?,
+    val descripcion: String?
 )

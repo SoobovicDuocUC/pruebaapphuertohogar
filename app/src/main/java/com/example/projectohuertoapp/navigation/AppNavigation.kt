@@ -19,10 +19,14 @@ import com.example.projectohuertoapp.viewmodel.HomeViewModel
 @Composable
 fun AppNavigation(authViewModel: AuthViewModel) {
     val navController = rememberNavController()
+
+    // ViewModels simples (sin factory)
     val carritoViewModel: CarritoViewModel = viewModel()
     val catalogoViewModel: CatalogoViewModel = viewModel()
-    val homeViewModel: HomeViewModel = viewModel ()
-    val authViewModel: AuthViewModel = viewModel ()
+    val homeViewModel: HomeViewModel = viewModel()
+
+    // ¡OJO! Eliminé la línea: val authViewModel: AuthViewModel = viewModel()
+    // porque ya lo recibimos como parámetro arriba (authViewModel) y ese es el que tiene la DB.
 
     NavHost(navController = navController, startDestination = "home") {
 

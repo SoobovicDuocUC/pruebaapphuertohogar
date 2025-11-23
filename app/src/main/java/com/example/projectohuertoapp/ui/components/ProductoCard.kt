@@ -1,71 +1,73 @@
 package com.example.projectohuertoapp.ui.components
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.projectohuertoapp.model.Producto
 
 @Composable
 fun ProductoCard(
     producto: Producto,
-    onAddToCart: () -> Unit,
-    isLoggedIn: Boolean // <-- Añadido para controlar la visibilidad del botón
+    onAgregarClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        Column {
-            Image(
-                painter = painterResource(id = producto.imagenResId),
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Usamos AsyncImage de Coil para cargar la URL
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(producto.img) // Usamos la propiedad 'img' (URL)
+                    .crossfade(true)
+                    .build(),
                 contentDescription = producto.nombre,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp)
-                    .clip(MaterialTheme.shapes.medium),
-                contentScale = ContentScale.Crop
+                    .height(120.dp)
+                    .fillMaxWidth(),
+                contentScale = ContentScale.Fit
             )
-            Column(Modifier.padding(16.dp)) {
-                Text(
-                    text = producto.nombre,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = producto.descripcion,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                )
-                Spacer(Modifier.height(12.dp))
-                Text(
-                    text = "$${"%,.0f".format(producto.precio)} CLP",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Spacer(Modifier.height(16.dp))
 
-                // 👇 SOLO MOSTRAR EL BOTÓN SI EL USUARIO HA INICIADO SESIÓN
-                if (isLoggedIn) {
-                    Button(
-                        onClick = onAddToCart,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = MaterialTheme.shapes.medium,
-                        contentPadding = PaddingValues(vertical = 12.dp)
-                    ) {
-                        Text("Añadir al carrito", style = MaterialTheme.typography.labelLarge)
-                    }
-                }
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = producto.nombre,
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp
+            )
+
+            Text(
+                text = "$ ${producto.precio}",
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = 16.sp
+            )
+
+            producto.precioKilo?.let {
+                Text(text = it, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Button(onClick = onAgregarClick) {
+                Icon(Icons.Default.Add, contentDescription = null)
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("Agregar")
             }
         }
     }

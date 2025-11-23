@@ -14,34 +14,36 @@ import com.example.projectohuertoapp.data.repository.UsuarioRepository
 import com.example.projectohuertoapp.navigation.AppNavigation
 import com.example.projectohuertoapp.ui.theme.HuertoHogarTheme
 import com.example.projectohuertoapp.viewmodel.AuthViewModel
-// IMPORT FALTANTE AÑADIDO AQUÍ:
 import com.example.projectohuertoapp.viewmodel.AuthViewModelFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Inicializar la base de datos Room
+        // 1. Inicializar la base de datos Room
         val db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java,
             "huertohogar_database"
-        ).build() // No olvides el .build() aquí
+        )
+            .fallbackToDestructiveMigration() // Opcional: Borra la BD si cambias el modelo (útil en desarrollo)
+            .build()
 
-        // Crear el Repositorio y la Factory
+        // 2. Crear el Repositorio y la Factory
         val usuarioRepository = UsuarioRepository(db.usuarioDao())
         val authViewModelFactory = AuthViewModelFactory(usuarioRepository)
 
         setContent {
-            // Usar la factory para crear el ViewModel
-            val authViewModel: AuthViewModel = viewModel(factory = authViewModelFactory)
-
             HuertoHogarTheme {
+                // 3. Crear el ViewModel usando la Factory
+                val authViewModel: AuthViewModel = viewModel(factory = authViewModelFactory)
+
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppNavigation(authViewModel)
+                    // 4. Pasar el ViewModel ya creado a la navegación
+                    AppNavigation(authViewModel = authViewModel)
                 }
             }
         }
