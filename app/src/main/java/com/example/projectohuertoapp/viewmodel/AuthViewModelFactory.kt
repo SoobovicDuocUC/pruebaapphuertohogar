@@ -2,7 +2,8 @@ package com.example.projectohuertoapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.projectohuertoapp.data.repository.UsuarioRepository
+import com.example.projectohuertoapp.network.repository.UsuarioRepository
+
 
 class AuthViewModelFactory(private val repository: UsuarioRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {

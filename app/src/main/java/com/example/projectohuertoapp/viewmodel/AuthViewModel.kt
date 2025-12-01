@@ -2,8 +2,8 @@ package com.example.projectohuertoapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.projectohuertoapp.data.local.entity.Usuario
-import com.example.projectohuertoapp.data.repository.UsuarioRepository
+import com.example.projectohuertoapp.network.dto.UsuarioDTO
+import com.example.projectohuertoapp.network.repository.UsuarioRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -14,8 +14,9 @@ import kotlinx.coroutines.launch
 
 class AuthViewModel(private val repository: UsuarioRepository) : ViewModel() {
 
-    private val _usuarioLogueado = MutableStateFlow<Usuario?>(null)
-    val usuarioLogueado: StateFlow<Usuario?> = _usuarioLogueado.asStateFlow()
+    // El estado del usuario logueado ahora es de tipo UsuarioDTO
+    private val _usuarioLogueado = MutableStateFlow<UsuarioDTO?>(null)
+    val usuarioLogueado: StateFlow<UsuarioDTO?> = _usuarioLogueado.asStateFlow()
 
     val isLoggedIn: StateFlow<Boolean> = usuarioLogueado.map { it != null }
         .stateIn(
@@ -30,13 +31,18 @@ class AuthViewModel(private val repository: UsuarioRepository) : ViewModel() {
     private val _registroState = MutableStateFlow<RegistroState>(RegistroState.Idle)
     val registroState: StateFlow<RegistroState> = _registroState.asStateFlow()
 
+    /**
+     * Llama al Repositorio para registrar un nuevo usuario en el servidor.
+     */
     fun registrarUsuario(nombre: String, correo: String, contrasena: String) {
         viewModelScope.launch {
             _registroState.value = RegistroState.Loading
+            // El Repositorio manejará la conversión de (nombre -> username) y la llamada a Retrofit
             val result = repository.registrarUsuario(nombre, correo, contrasena)
             result.fold(
-                onSuccess = { usuario ->
-                    _usuarioLogueado.value = usuario
+                onSuccess = { usuarioDB ->
+                    // Guardamos el UsuarioDTO devuelto por el servidor
+                    _usuarioLogueado.value = usuarioDB
                     _registroState.value = RegistroState.Success
                 },
                 onFailure = { error ->
@@ -46,15 +52,20 @@ class AuthViewModel(private val repository: UsuarioRepository) : ViewModel() {
         }
     }
 
+    /**
+     * Llama al Repositorio para iniciar sesión con email y contraseña.
+     */
     fun iniciarSesion(correo: String, contrasena: String) {
         viewModelScope.launch {
             _loginState.value = LoginState.Loading
+            // El Repositorio llama a Retrofit para autenticar
             val usuario = repository.login(correo, contrasena)
             if (usuario != null) {
+                // Guardamos el UsuarioDTO si el login fue exitoso
                 _usuarioLogueado.value = usuario
                 _loginState.value = LoginState.Success
             } else {
-                _loginState.value = LoginState.Error("Correo o contraseña incorrectos")
+                _loginState.value = LoginState.Error("Correo o contraseña incorrectos o error de red")
             }
         }
     }
@@ -73,6 +84,8 @@ class AuthViewModel(private val repository: UsuarioRepository) : ViewModel() {
         _registroState.value = RegistroState.Idle
     }
 }
+
+// --- CLASES DE ESTADO (Sin Cambios) ---
 
 sealed class LoginState {
     data object Idle : LoginState()

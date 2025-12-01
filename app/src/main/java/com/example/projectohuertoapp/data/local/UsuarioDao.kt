@@ -1,5 +1,5 @@
 package com.example.projectohuertoapp.data.local
-
+/*
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
@@ -29,3 +29,4 @@ interface UsuarioDao {
     @Query("SELECT * FROM usuarios WHERE correo = :correo AND contrasena = :contrasena LIMIT 1")
     suspend fun login(correo: String, contrasena: String): Usuario?
 }
+*/

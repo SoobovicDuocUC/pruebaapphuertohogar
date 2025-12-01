@@ -1,5 +1,5 @@
 package com.example.projectohuertoapp.data.local.entity
-
+/*
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -10,4 +10,4 @@ data class Usuario(
     val nombre: String,
     val correo: String,
     val contrasena: String
-)
+)*/

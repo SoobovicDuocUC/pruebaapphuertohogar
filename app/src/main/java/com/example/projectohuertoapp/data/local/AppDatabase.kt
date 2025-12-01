@@ -1,5 +1,5 @@
 package com.example.projectohuertoapp.data.local
-
+/*
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.example.projectohuertoapp.data.local.entity.Usuario
@@ -8,3 +8,4 @@ import com.example.projectohuertoapp.data.local.entity.Usuario
 abstract class AppDatabase : RoomDatabase() {
     abstract fun usuarioDao(): UsuarioDao
 }
+*/
