@@ -97,4 +97,13 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.1")
+    testImplementation("io.kotest:kotest-runner-junit5:5.8.0")
+    testImplementation("io.kotest:kotest-assertions-core:5.8.0")
+    testImplementation("io.kotest:kotest-property:5.8.0")
+    testImplementation("io.mockk:mockk:1.13.10")
+    androidTestImplementation("androidx.compose.ui:ui-test- junit4:1.6.2")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.6.2′′")
 }
