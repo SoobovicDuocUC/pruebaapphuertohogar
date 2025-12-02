@@ -1,110 +1,111 @@
 package com.example.projectohuertoapp.ui.screens
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.* // Importante
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.projectohuertoapp.R
 import com.example.projectohuertoapp.viewmodel.AuthViewModel
-import com.example.projectohuertoapp.viewmodel.LoginState
 
 @Composable
-fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
-    var correo by remember { mutableStateOf("") }
-    var contrasena by remember { mutableStateOf("") }
+fun LoginScreen(
+    navController: NavController,
+    authViewModel: AuthViewModel
+) {
+    // Observamos el estado del ViewModel
+    val usuarioLogueado by authViewModel.usuarioLogueado.collectAsState()
+    val error by authViewModel.error.collectAsState()
 
-    val loginState by authViewModel.loginState.collectAsState()
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
 
-    LaunchedEffect(loginState) {
-        if (loginState is LoginState.Success) {
-            navController.navigate("catalogo") {
+    // Si el usuario se loguea exitosamente, navegamos al home
+    LaunchedEffect(usuarioLogueado) {
+        if (usuarioLogueado != null) {
+            navController.navigate("home") {
                 popUpTo("login") { inclusive = true }
             }
-            authViewModel.resetLoginState()
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            "Bienvenido a HuertoHogar",
-            style = MaterialTheme.typography.headlineLarge,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.primary
-        )
-        Text(
-            "Ingresa a tu cuenta para continuar",
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-        )
-        Spacer(modifier = Modifier.height(48.dp))
-
-        OutlinedTextField(
-            value = correo,
-            onValueChange = { correo = it },
-            label = { Text("Correo Electrónico") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            enabled = loginState !is LoginState.Loading
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        OutlinedTextField(
-            value = contrasena,
-            onValueChange = { contrasena = it },
-            label = { Text("Contraseña") },
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            enabled = loginState !is LoginState.Loading
+    Box(modifier = Modifier.fillMaxSize()) {
+        Image(
+            painter = painterResource(id = R.drawable.frutasbackground), // Asegúrate de tener esta imagen
+            contentDescription = "Fondo",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
         )
 
-        when (loginState) {
-            is LoginState.Error -> {
-                Text(
-                    (loginState as LoginState.Error).message,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.padding(top = 8.dp),
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
-            is LoginState.Loading -> {
-                CircularProgressIndicator(
-                    modifier = Modifier.padding(top = 16.dp)
-                )
-            }
-            else -> {}
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-        Button(
-            onClick = {
-                if (correo.isNotBlank() && contrasena.isNotBlank()) {
-                    authViewModel.iniciarSesion(correo, contrasena)
-                }
-            },
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            enabled = loginState !is LoginState.Loading
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Iniciar Sesión", style = MaterialTheme.typography.labelLarge)
-        }
-        TextButton(onClick = { navController.navigate("registro") }) {
-            Text("¿No tienes cuenta? Regístrate aquí")
+            // Logo (opcional, si tienes uno)
+            // Image(...)
+
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f))
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = "Iniciar Sesión", style = MaterialTheme.typography.headlineMedium)
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    OutlinedTextField(
+                        value = email,
+                        onValueChange = { email = it },
+                        label = { Text("Correo") },
+                        singleLine = true
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        label = { Text("Contraseña") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        singleLine = true
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Mostrar error si existe
+                    if (error != null) {
+                        Text(text = error!!, color = MaterialTheme.colorScheme.error)
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+
+                    Button(
+                        onClick = { authViewModel.login(email, password) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Ingresar")
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "¿No tienes cuenta? Regístrate aquí",
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.clickable { navController.navigate("registro") }
+                    )
+                }
+            }
         }
     }
 }

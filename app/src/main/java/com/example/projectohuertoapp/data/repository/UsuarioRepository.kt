@@ -1,41 +1,58 @@
 package com.example.projectohuertoapp.data.repository
 
-import com.example.projectohuertoapp.data.local.UsuarioDao
 import com.example.projectohuertoapp.data.local.entity.Usuario
+import com.example.projectohuertoapp.model.LoginRequest
+import com.example.projectohuertoapp.model.RegisterRequest
+import com.example.projectohuertoapp.network.ApiService
+import com.example.projectohuertoapp.network.RetrofitClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class UsuarioRepository(private val usuarioDao: UsuarioDao) {
+// Ahora recibe 'apiService' para poder inyectar el Fake en los tests
+class UsuarioRepository(
+    private val apiService: ApiService = RetrofitClient.instance
+) {
 
-    /**
-     * Intenta registrar un nuevo usuario.
-     * Devuelve un Result que es Success si el correo no existe,
-     * o Failure si el correo ya está registrado.
-     */
     suspend fun registrarUsuario(nombre: String, correo: String, contrasena: String): Result<Usuario> = withContext(Dispatchers.IO) {
         try {
-            // Verificar si el correo ya existe
-            val usuarioExistente = usuarioDao.buscarPorCorreo(correo)
-            if (usuarioExistente != null) {
-                Result.failure(Exception("El correo electrónico ya está registrado."))
+            val request = RegisterRequest(email = correo, password = contrasena)
+            val response = apiService.register(request)
+
+            if (response.isSuccessful && response.body() != null) {
+                // Convertimos la respuesta del backend a tu entidad Usuario local
+                val authResponse = response.body()!!
+                val nuevoUsuario = Usuario(
+                    nombre = nombre,
+                    correo = authResponse.email,
+                    contrasena = "" // Por seguridad no guardamos la pass plana
+                )
+                Result.success(nuevoUsuario)
             } else {
-                val nuevoUsuario = Usuario(nombre = nombre, correo = correo, contrasena = contrasena)
-                usuarioDao.registrar(nuevoUsuario)
-                // Buscamos el usuario recién insertado para obtener el ID
-                val usuarioInsertado = usuarioDao.buscarPorCorreo(correo)!!
-                Result.success(usuarioInsertado)
+                Result.failure(Exception("Error en registro: ${response.code()}"))
             }
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
-    /**
-     * Intenta iniciar sesión.
-     * Devuelve el Usuario si las credenciales son correctas, o null si no lo son.
-     */
     suspend fun login(correo: String, contrasena: String): Usuario? = withContext(Dispatchers.IO) {
-        usuarioDao.login(correo, contrasena)
+        try {
+            val request = LoginRequest(email = correo, password = contrasena)
+            val response = apiService.login(request)
+
+            if (response.isSuccessful && response.body() != null) {
+                val authResponse = response.body()!!
+                // Retornamos un usuario válido
+                Usuario(
+                    nombre = "Usuario", // El backend no devuelve nombre, solo email/rol
+                    correo = authResponse.email,
+                    contrasena = ""
+                )
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            null
+        }
     }
 }
-

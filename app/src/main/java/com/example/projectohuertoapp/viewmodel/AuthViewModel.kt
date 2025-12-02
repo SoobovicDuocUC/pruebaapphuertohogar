@@ -5,11 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.projectohuertoapp.data.local.entity.Usuario
 import com.example.projectohuertoapp.data.repository.UsuarioRepository
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class AuthViewModel(private val repository: UsuarioRepository) : ViewModel() {
@@ -17,73 +14,49 @@ class AuthViewModel(private val repository: UsuarioRepository) : ViewModel() {
     private val _usuarioLogueado = MutableStateFlow<Usuario?>(null)
     val usuarioLogueado: StateFlow<Usuario?> = _usuarioLogueado.asStateFlow()
 
-    val isLoggedIn: StateFlow<Boolean> = usuarioLogueado.map { it != null }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = false
-        )
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
 
-    private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
-    val loginState: StateFlow<LoginState> = _loginState.asStateFlow()
-
-    private val _registroState = MutableStateFlow<RegistroState>(RegistroState.Idle)
-    val registroState: StateFlow<RegistroState> = _registroState.asStateFlow()
-
-    fun registrarUsuario(nombre: String, correo: String, contrasena: String) {
+    fun registrar(usuario: Usuario) {
         viewModelScope.launch {
-            _registroState.value = RegistroState.Loading
-            val result = repository.registrarUsuario(nombre, correo, contrasena)
-            result.fold(
-                onSuccess = { usuario ->
-                    _usuarioLogueado.value = usuario
-                    _registroState.value = RegistroState.Success
-                },
-                onFailure = { error ->
-                    _registroState.value = RegistroState.Error(error.message ?: "Error desconocido")
+            try {
+                // CORRECCIÓN: Usamos 'correo' y 'contrasena' (español) y la función del repo 'registrarUsuario'
+                val resultado = repository.registrarUsuario(
+                    nombre = usuario.nombre,
+                    correo = usuario.correo,
+                    contrasena = usuario.contrasena
+                )
+
+                resultado.onSuccess { usuarioRegistrado ->
+                    _usuarioLogueado.value = usuarioRegistrado
+                    _error.value = null
+                }.onFailure { exception ->
+                    _error.value = exception.message ?: "Error al registrar"
                 }
-            )
-        }
-    }
-
-    fun iniciarSesion(correo: String, contrasena: String) {
-        viewModelScope.launch {
-            _loginState.value = LoginState.Loading
-            val usuario = repository.login(correo, contrasena)
-            if (usuario != null) {
-                _usuarioLogueado.value = usuario
-                _loginState.value = LoginState.Success
-            } else {
-                _loginState.value = LoginState.Error("Correo o contraseña incorrectos")
+            } catch (e: Exception) {
+                _error.value = "Error desconocido: ${e.message}"
             }
         }
     }
 
-    fun cerrarSesion() {
+    fun login(email: String, clave: String) {
+        viewModelScope.launch {
+            try {
+                // CORRECCIÓN: Llamamos a login en el repositorio
+                val usuario = repository.login(email, clave)
+                if (usuario != null) {
+                    _usuarioLogueado.value = usuario
+                    _error.value = null
+                } else {
+                    _error.value = "Credenciales incorrectas"
+                }
+            } catch (e: Exception) {
+                _error.value = "Error al iniciar sesión"
+            }
+        }
+    }
+
+    fun logout() {
         _usuarioLogueado.value = null
-        _loginState.value = LoginState.Idle
-        _registroState.value = RegistroState.Idle
     }
-
-    fun resetLoginState() {
-        _loginState.value = LoginState.Idle
-    }
-
-    fun resetRegistroState() {
-        _registroState.value = RegistroState.Idle
-    }
-}
-
-sealed class LoginState {
-    data object Idle : LoginState()
-    data object Loading : LoginState()
-    data object Success : LoginState()
-    data class Error(val message: String) : LoginState()
-}
-
-sealed class RegistroState {
-    data object Idle : RegistroState()
-    data object Loading : RegistroState()
-    data object Success : RegistroState()
-    data class Error(val message: String) : RegistroState()
 }

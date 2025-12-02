@@ -17,16 +17,15 @@ import com.example.projectohuertoapp.viewmodel.CatalogoViewModel
 import com.example.projectohuertoapp.viewmodel.HomeViewModel
 
 @Composable
-fun AppNavigation(authViewModel: AuthViewModel) {
+fun AppNavigation(
+    authViewModel: AuthViewModel,
+    catalogoViewModel: CatalogoViewModel // AHORA SÍ RECIBE ESTE PARÁMETRO
+) {
     val navController = rememberNavController()
 
-    // ViewModels simples (sin factory)
+    // ViewModels que no necesitan Factory especial
     val carritoViewModel: CarritoViewModel = viewModel()
-    val catalogoViewModel: CatalogoViewModel = viewModel()
     val homeViewModel: HomeViewModel = viewModel()
-
-    // ¡OJO! Eliminé la línea: val authViewModel: AuthViewModel = viewModel()
-    // porque ya lo recibimos como parámetro arriba (authViewModel) y ese es el que tiene la DB.
 
     NavHost(navController = navController, startDestination = "home") {
 
@@ -40,6 +39,7 @@ fun AppNavigation(authViewModel: AuthViewModel) {
             RegistroScreen(navController, authViewModel)
         }
         composable("catalogo") {
+            // Usamos el catalogoViewModel que viene desde MainActivity
             CatalogoScreen(navController, catalogoViewModel, carritoViewModel, authViewModel)
         }
         composable("carrito") {

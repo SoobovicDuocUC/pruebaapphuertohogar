@@ -47,7 +47,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation("io.coil-kt:coil-compose:2.4.0")
-
+    testImplementation(libs.junit)
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
     // Compose BoM (Bill of Materials)
     implementation(platform(libs.androidx.compose.bom))
 

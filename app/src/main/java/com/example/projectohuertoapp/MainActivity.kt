@@ -10,40 +10,54 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.room.Room
 import com.example.projectohuertoapp.data.local.AppDatabase
+import com.example.projectohuertoapp.data.repository.NetworkProductoRepository
 import com.example.projectohuertoapp.data.repository.UsuarioRepository
 import com.example.projectohuertoapp.navigation.AppNavigation
 import com.example.projectohuertoapp.ui.theme.HuertoHogarTheme
 import com.example.projectohuertoapp.viewmodel.AuthViewModel
 import com.example.projectohuertoapp.viewmodel.AuthViewModelFactory
+import com.example.projectohuertoapp.viewmodel.CatalogoViewModel
+import com.example.projectohuertoapp.viewmodel.CatalogoViewModelFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 1. Inicializar la base de datos Room
+        // 1. Inicializar la base de datos Room (La dejamos por si acaso, aunque Auth ahora va por API)
         val db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java,
             "huertohogar_database"
         )
-            .fallbackToDestructiveMigration() // Opcional: Borra la BD si cambias el modelo (útil en desarrollo)
+            .fallbackToDestructiveMigration()
             .build()
 
-        // 2. Crear el Repositorio y la Factory
-        val usuarioRepository = UsuarioRepository(db.usuarioDao())
+        // 2. Crear Repositorios
+        // CORRECCIÓN AQUÍ: Quitamos 'db.usuarioDao()' del paréntesis.
+        // Al dejarlo vacío, usa automáticamente RetrofitClient como definimos en el repositorio.
+        val usuarioRepository = UsuarioRepository()
+
+        val productoRepository = NetworkProductoRepository()
+
+        // 3. Crear Factories
         val authViewModelFactory = AuthViewModelFactory(usuarioRepository)
+        val catalogoViewModelFactory = CatalogoViewModelFactory(productoRepository)
 
         setContent {
-            HuertoHogarTheme {
-                // 3. Crear el ViewModel usando la Factory
-                val authViewModel: AuthViewModel = viewModel(factory = authViewModelFactory)
+            // 4. Crear ViewModels con las factories
+            val authViewModel: AuthViewModel = viewModel(factory = authViewModelFactory)
+            val catalogoViewModel: CatalogoViewModel = viewModel(factory = catalogoViewModelFactory)
 
+            HuertoHogarTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // 4. Pasar el ViewModel ya creado a la navegación
-                    AppNavigation(authViewModel = authViewModel)
+                    // 5. Pasar ViewModels a la navegación
+                    AppNavigation(
+                        authViewModel = authViewModel,
+                        catalogoViewModel = catalogoViewModel
+                    )
                 }
             }
         }
