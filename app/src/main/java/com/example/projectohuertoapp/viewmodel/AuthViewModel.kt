@@ -17,7 +17,7 @@ class AuthViewModel(private val repository: UsuarioRepository) : ViewModel() {
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
-    fun registrar(usuario: Usuario, telefono: String) {
+    fun registrar(usuario: Usuario) {
         viewModelScope.launch {
             try {
                 // CORRECCIÓN: Usamos 'correo' y 'contrasena' (español) y la función del repo 'registrarUsuario'
