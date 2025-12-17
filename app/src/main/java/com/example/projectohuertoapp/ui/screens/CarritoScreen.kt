@@ -27,6 +27,8 @@ fun CarritoScreen(navController: NavController, viewModel: CarritoViewModel) {
     // Calculamos el total
     val total = items.sumOf { it.producto.precio * it.cantidad }
 
+    val cantTotal = items.sumOf { it.cantidad }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -139,6 +141,12 @@ fun CarritoScreen(navController: NavController, viewModel: CarritoViewModel) {
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
+
+                    Text( "Cantidad de Productos: $cantTotal",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                    )
 
                 Button(
                     onClick = { /* Lógica de pago */ },

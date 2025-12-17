@@ -33,8 +33,6 @@ class MainActivity : ComponentActivity() {
             .build()
 
         // 2. Crear Repositorios
-        // CORRECCIÓN AQUÍ: Quitamos 'db.usuarioDao()' del paréntesis.
-        // Al dejarlo vacío, usa automáticamente RetrofitClient como definimos en el repositorio.
         val usuarioRepository = UsuarioRepository()
 
         val productoRepository = NetworkProductoRepository()
